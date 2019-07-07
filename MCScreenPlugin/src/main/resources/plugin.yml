@@ -1,0 +1,8 @@
+name: MCScreen
+version: 1.0
+authors: [Jan Bebendorf]
+website: https://github.com/JanHolger/MCScreen
+main: eu.bebendorf.mcscreen.MCScreen
+commands:
+  mcscreen:
+    description: Command to control screens
