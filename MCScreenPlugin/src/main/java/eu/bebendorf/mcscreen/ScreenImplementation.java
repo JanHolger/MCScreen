@@ -35,6 +35,7 @@ public class ScreenImplementation implements Screen {
     @Getter
     BlockFace direction;
     ImageWrapper image = null;
+    ImageWrapper[][] previous;
 
     public ScreenImplementation(int id, Location l1, Location l2, BlockFace direction){
         this.id = id;
@@ -43,6 +44,7 @@ public class ScreenImplementation implements Screen {
         int width = (xChange + zChange) + 1;
         int height = (Math.max(l1.getBlockY(), l2.getBlockY()) - Math.min(l1.getBlockY(), l2.getBlockY())) + 1;
         maps = new short[width][height];
+        previous = new ImageWrapper[width][height];
         if(direction == BlockFace.WEST || direction == BlockFace.SOUTH){
             this.location = new Location(l1.getWorld(), Math.min(l1.getBlockX(), l2.getBlockX()), Math.min(l1.getBlockY(), l2.getBlockY()), Math.min(l1.getBlockZ(), l2.getBlockZ()));
         }else{
@@ -81,6 +83,7 @@ public class ScreenImplementation implements Screen {
         int width = json.get("maps").getAsJsonArray().size();
         int height = json.get("maps").getAsJsonArray().get(0).getAsJsonArray().size();
         this.maps = new short[width][height];
+        this.previous = new ImageWrapper[width][height];
         JsonArray jsonMaps = json.getAsJsonArray("maps");
         for(int x = 0; x < width; x++){
             JsonArray jsonMapsRow = jsonMaps.get(x).getAsJsonArray();
@@ -189,6 +192,9 @@ public class ScreenImplementation implements Screen {
     }
 
     private void renderSync(int x, int y, ImageWrapper image){
+        if(!didChange(x, y, image))
+            return;
+        previous[x][y] = image;
         MapView map = Bukkit.getMap(maps[x][y]);
         for(MapRenderer renderer : map.getRenderers())
             map.removeRenderer(renderer);
@@ -197,6 +203,11 @@ public class ScreenImplementation implements Screen {
                 mapCanvas.drawImage(0, 0, image.getImage());
             }
         });
+        for(Player player : location.getWorld().getPlayers()){
+            if(player.getLocation().distance(location) < 50){
+                MCScreen.getInstance().getScreenManager().render(player, map);
+            }
+        }
     }
 
     public Location getPlaneLocation(){
@@ -306,6 +317,30 @@ public class ScreenImplementation implements Screen {
                 continue;
             frame.remove();
         }
+    }
+
+    private boolean didChange(int x, int y, ImageWrapper newImage){
+        if(previous[x][y] == null)
+            return true;
+        return isDifferent(previous[x][y], newImage);
+    }
+
+    private static boolean isDifferent(ImageWrapper i1, ImageWrapper i2){
+        for(int x = 0; x < i1.getWidth(); x++){
+            for(int y = 0; y < i1.getHeight(); y++){
+                ImageWrapper.WrappedPixel p1 = i1.getPixel(x, y);
+                ImageWrapper.WrappedPixel p2 = i2.getPixel(x, y);
+                if(p1.getRed() != p2.getRed())
+                    return true;
+                if(p1.getGreen() != p2.getGreen())
+                    return true;
+                if(p1.getBlue() != p2.getBlue())
+                    return true;
+                if(p1.getAlpha() != p2.getAlpha())
+                    return true;
+            }
+        }
+        return false;
     }
 
 }

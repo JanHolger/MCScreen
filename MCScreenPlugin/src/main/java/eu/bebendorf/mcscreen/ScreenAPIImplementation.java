@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.map.MapView;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,6 +31,7 @@ public class ScreenAPIImplementation implements ScreenAPI {
     private List<ScreenImplementation> screens = new ArrayList<>();
     private File saveFile;
     private List<ScreenListener> listeners = new ArrayList<>();
+    private CustomPacketSender customPacketSender = null;
 
     public ScreenAPIImplementation(){
         this(null);
@@ -37,6 +39,11 @@ public class ScreenAPIImplementation implements ScreenAPI {
 
     public ScreenAPIImplementation(File saveFile){
         this.load(saveFile);
+        try {
+            customPacketSender = new CustomPacketSender();
+        } catch (NoSuchMethodException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
         Bukkit.getScheduler().scheduleSyncRepeatingTask(MCScreen.getInstance(), () -> screens.forEach(ScreenImplementation::renderSync), 10L, 1L);
     }
 
@@ -159,6 +166,10 @@ public class ScreenAPIImplementation implements ScreenAPI {
                 return screen;
         }
         return null;
+    }
+
+    public void render(Player player, MapView mapView){
+        customPacketSender.send(player, mapView);
     }
 
 }
