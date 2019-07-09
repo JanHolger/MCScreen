@@ -13,5 +13,9 @@ public interface Screen {
     ScreenPixel getPixel(Player player);
     Location getLocation();
     BlockFace getDirection();
+    int getWidth();
+    int getHeight();
+    int getPixelWidth();
+    int getPixelHeight();
 
 }

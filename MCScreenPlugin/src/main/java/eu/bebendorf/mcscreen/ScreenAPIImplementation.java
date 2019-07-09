@@ -8,6 +8,7 @@ import eu.bebendorf.mcscreen.api.Screen;
 import eu.bebendorf.mcscreen.api.ScreenAPI;
 import eu.bebendorf.mcscreen.api.ScreenListener;
 import eu.bebendorf.mcscreen.api.helper.MouseButton;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -36,6 +37,7 @@ public class ScreenAPIImplementation implements ScreenAPI {
 
     public ScreenAPIImplementation(File saveFile){
         this.load(saveFile);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(MCScreen.getInstance(), () -> screens.forEach(ScreenImplementation::renderSync), 10L, 1L);
     }
 
     List<ScreenListener> getListeners(){

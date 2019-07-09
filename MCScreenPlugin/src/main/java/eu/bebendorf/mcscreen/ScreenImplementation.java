@@ -34,6 +34,7 @@ public class ScreenImplementation implements Screen {
     short[][] maps;
     @Getter
     BlockFace direction;
+    ImageWrapper image = null;
 
     public ScreenImplementation(int id, Location l1, Location l2, BlockFace direction){
         this.id = id;
@@ -166,22 +167,28 @@ public class ScreenImplementation implements Screen {
     }
 
     public void render(ImageWrapper source){
+        image = source;
+    }
+
+    public void renderSync(){
+        if(image == null)
+            return;
         for(int blockX = 0; blockX < getWidth(); blockX++){
             for(int blockY = 0; blockY < getHeight(); blockY++){
                 ImageWrapper image = new ImageWrapper(128, 128);
                 for(int x = 0; x < 128; x++){
                     for(int y = 0; y < 128; y++){
-                        ImageWrapper.WrappedPixel pixel = source.getPixel((blockX * 128) + x, (source.getHeight() - ((blockY + 1) * 128)) + y);
+                        ImageWrapper.WrappedPixel pixel = this.image.getPixel((blockX * 128) + x, (this.image.getHeight() - ((blockY + 1) * 128)) + y);
                         image.getPixel(x, y).setRGBA(pixel.getRed(), pixel.getGreen(), pixel.getBlue(), pixel.getAlpha());
                     }
                 }
-                image.write(new File("tile-"+blockX+"-"+blockY+".png"));
-                render(blockX, blockY, image);
+                renderSync(blockX, blockY, image);
             }
         }
+        image = null;
     }
 
-    private void render(int x, int y, ImageWrapper image){
+    private void renderSync(int x, int y, ImageWrapper image){
         MapView map = Bukkit.getMap(maps[x][y]);
         for(MapRenderer renderer : map.getRenderers())
             map.removeRenderer(renderer);

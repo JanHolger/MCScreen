@@ -44,6 +44,8 @@ public class ImageWrapper {
     }
 
     public WrappedPixel getPixel(int x,int y){
+        if(x < 0 || y < 0 || x >= getWidth() || y >= getHeight())
+            return null;
         return new WrappedPixel(x,y);
     }
 
